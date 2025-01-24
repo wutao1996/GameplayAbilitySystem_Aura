@@ -21,9 +21,12 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 
+public:
+	virtual int32 GetPlayerLevel() override;
+
 private:
 	/**
 	 * @brief ≥ı ºªØAbilitySystemComponent
 	 */
-	void InitAbilityActorInfo();
+	virtual void InitAbilityActorInfo() override;
 };

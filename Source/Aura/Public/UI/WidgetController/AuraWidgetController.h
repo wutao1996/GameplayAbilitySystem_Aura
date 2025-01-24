@@ -65,6 +65,7 @@ protected:
 
 
 public:
+	UFUNCTION(BlueprintCallable)
 	virtual void BroadcastInitialValues();
 
 	virtual void BindCallbacksToDependencies();

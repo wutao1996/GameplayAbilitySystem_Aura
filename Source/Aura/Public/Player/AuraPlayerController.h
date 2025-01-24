@@ -4,12 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "GameplayTagContainer.h"
 #include "AuraPlayerController.generated.h"
 
 struct FInputActionValue;
 class UInputAction;
 class UInputMappingContext;
 class IEnemyInterface;
+class UAuraInputConfig;
+class USplineComponent;
+class UAuraAbilitySystemComponent;
 
 /**
  * 
@@ -28,9 +32,45 @@ public:
 	TObjectPtr<UInputAction> IA_Move;
 
 private:
-	TObjectPtr<IEnemyInterface> LastActor;
-	TObjectPtr<IEnemyInterface> ThisActor;
+	IEnemyInterface* LastActor;
+	IEnemyInterface* ThisActor;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UAuraInputConfig> AuraInputConfig;
+
+	TObjectPtr<UAuraAbilitySystemComponent> AuraASC;
+
+	/* 鼠标点击移动 */
+	/**
+	 * @brief 目标位置
+	 */
+	FVector CachedDestination = FVector::ZeroVector;
+	/**
+	* @brief 鼠标按下持续时间
+	*/
+	float FollowTime = 0.f;
+	/**
+	* @brief 短按阈值
+	 */
+	float ShortPressThreshold = 0.5f;
+	/**
+	 * @brief 是否自动移动
+	 */
+	bool bAutoRunning = false;
+	/**
+	 * @brief 是否有目标对象
+	 */
+	bool bTargeting = false;
+	/**
+	 * @brief 自动移动接收半径（移动到目标位置半径内停止移动）
+	 */
+	UPROPERTY(EditDefaultsOnly)
+	float AutoRunAcceptanceRadius = 50.f;
+	/**
+	 * @brief 用于生成与目标位置之间相对平滑的移动路径
+	 */
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USplineComponent> Spline;
 public:
 	AAuraPlayerController();
 
@@ -45,4 +85,14 @@ private:
 	void Move(const FInputActionValue& InInputActionValue);
 
 	void CursorTrace();
+
+	void AbilityInputTagPressed(FGameplayTag InGameplayTag);
+
+	void AbilityInputTagReleased(FGameplayTag InGameplayTag);
+
+	void AbilityInputTagHeld(FGameplayTag InGameplayTag);
+
+	UAuraAbilitySystemComponent* GetAuraAbilitySystemComponent();
+
+	void AutoRun();
 };

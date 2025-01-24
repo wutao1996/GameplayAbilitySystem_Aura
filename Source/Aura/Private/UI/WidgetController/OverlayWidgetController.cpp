@@ -22,30 +22,54 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	{
 		if (UAuraAttributeSet* AuraAttributeSet = Cast<UAuraAttributeSet>(AttributeSet))
 		{
-			AuraAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAttributeSet->GetHealthAttribute()).AddUObject(this, &UOverlayWidgetController::HealthChanged);
-			AuraAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAttributeSet->GetMaxHealthAttribute()).AddUObject(this, &UOverlayWidgetController::MaxHealthChanged);
-			AuraAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAttributeSet->GetManaAttribute()).AddUObject(this, &UOverlayWidgetController::ManaChanged);
-			AuraAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAttributeSet->GetMaxManaAttribute()).AddUObject(this, &UOverlayWidgetController::MaxManaChanged);
+			//注册属性值变化
+			AuraAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAttributeSet->GetHealthAttribute()).AddLambda
+			(
+				[this](const FOnAttributeChangeData& InData)
+				{
+					OnHealthChanged.Broadcast(InData.NewValue);
+				}
+			);
+			AuraAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAttributeSet->GetMaxHealthAttribute()).AddLambda
+			(
+				[this](const FOnAttributeChangeData& InData)
+				{
+					OnMaxHealthChanged.Broadcast(InData.NewValue);
+				}
+			);
+			AuraAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAttributeSet->GetManaAttribute()).AddLambda
+			(
+				[this](const FOnAttributeChangeData& InData)
+				{
+					OnManaChanged.Broadcast(InData.NewValue);
+				}
+			);
+			AuraAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAttributeSet->GetMaxManaAttribute()).AddLambda
+			(
+				[this](const FOnAttributeChangeData& InData)
+				{
+					OnMaxManaChanged.Broadcast(InData.NewValue);
+				}
+			);
+
+			AuraAbilitySystemComponent->OnEffectAssetTags.AddLambda(
+				[this](const FGameplayTagContainer& InGameplayTagContainer)
+				{
+					for (const FGameplayTag& Tag : InGameplayTagContainer)
+					{
+						//如果是消息标签，广播给绑定的UI
+						FGameplayTag MessageTag = FGameplayTag::RequestGameplayTag("Message");
+						if (Tag.MatchesTag(MessageTag))
+						{
+							const FUIWidgetRow* UIWidgetRow = GetDataTableRowByTag<FUIWidgetRow>(MessageWidgetDataTable, Tag);
+							if (UIWidgetRow)
+							{
+								MessageWidgetRowSignature.Broadcast(*UIWidgetRow);
+							}
+						}
+					}	
+				}
+			);
 		}
 	}
-}
-
-void UOverlayWidgetController::HealthChanged(const FOnAttributeChangeData& InData)
-{
-	OnHealthChanged.Broadcast(InData.NewValue);
-}
-
-void UOverlayWidgetController::MaxHealthChanged(const FOnAttributeChangeData& InData)
-{
-	OnMaxHealthChanged.Broadcast(InData.NewValue);
-}
-
-void UOverlayWidgetController::ManaChanged(const FOnAttributeChangeData& InData)
-{
-	OnManaChanged.Broadcast(InData.NewValue);
-}
-
-void UOverlayWidgetController::MaxManaChanged(const FOnAttributeChangeData& InData)
-{
-	OnMaxManaChanged.Broadcast(InData.NewValue);
 }

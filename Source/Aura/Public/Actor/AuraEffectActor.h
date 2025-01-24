@@ -34,30 +34,36 @@ class AURA_API AAuraEffectActor : public AActor
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect | Instant")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect|Instant")
 	TSubclassOf<UGameplayEffect> InstantGameplayEffectClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect | Instant")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect|Instant")
 	EEffectApplicationPolicy InstantEffectApplicationPolicy = EEffectApplicationPolicy::DoNotApply;
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect | Duration")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect|Duration")
 	TSubclassOf<UGameplayEffect> DurationGameplayEffectClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect | Duration")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect|Duration")
 	EEffectApplicationPolicy DurationEffectApplicationPolicy = EEffectApplicationPolicy::DoNotApply;
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect | Infinite")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect|Infinite")
 	TSubclassOf<UGameplayEffect> InfiniteGameplayEffectClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect | Infinite")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect|Infinite")
 	EEffectApplicationPolicy InfiniteEffectApplicationPolicy = EEffectApplicationPolicy::DoNotApply;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect | Infinite")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect|Infinite")
 	EEffectRemovalPolicy InfiniteEffectRemovalPolicy = EEffectRemovalPolicy::RemoveOnEndOverlap;
 
 	TMap<FActiveGameplayEffectHandle, UAbilitySystemComponent*> ActiveEffectHandles;
+
+	/**
+	 * @brief ¼¶±ð
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect")
+	float ActorLevel = 1.f;
 
 public:	
 	AAuraEffectActor();

@@ -24,7 +24,7 @@ void AAuraEffectActor::ApplyEffectToTarget(AActor* InTargetActor, TSubclassOf<UG
 	{
 		FGameplayEffectContextHandle GameplayEffectHandle = TargetASC->MakeEffectContext();
 		GameplayEffectHandle.AddSourceObject(this);
-		const FGameplayEffectSpecHandle EffectSpecHandle = TargetASC->MakeOutgoingSpec(InGameplayEffectClass, 1.f, GameplayEffectHandle);
+		const FGameplayEffectSpecHandle EffectSpecHandle = TargetASC->MakeOutgoingSpec(InGameplayEffectClass, ActorLevel, GameplayEffectHandle);
 		FActiveGameplayEffectHandle ActiveEffectHandle = TargetASC->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 
 		//判断效果类型是否是持续的

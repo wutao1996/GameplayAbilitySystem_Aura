@@ -26,11 +26,21 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UAttributeSet> AttributeSet;
 
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing = "OnRep_Level")
+	int32 Level = 1;
+
 public:
 	AAuraPlayerState();
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
+
 	UAttributeSet* GetAuraAttributeSet() const;
+
+	int32 GetPlayerLevel() const;
+
+	UFUNCTION()
+	void OnRep_Level(int32 OldLevel);
 
 };
