@@ -34,6 +34,9 @@ class AURA_API AAuraEffectActor : public AActor
 	GENERATED_BODY()
 
 protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayEffect")
+	bool bApplyEffectsToEnemies = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameplayEffect|Instant")
 	TSubclassOf<UGameplayEffect> InstantGameplayEffectClass;
 

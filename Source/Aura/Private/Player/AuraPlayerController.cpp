@@ -10,9 +10,11 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Components/SplineComponent.h"
-#include "UI/AuraGameplayTags.h"
+#include "AuraGameplayTags.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
+#include "GameFramework/Character.h"
+#include "UI/Widget/DamageTextComponent.h"
 
 AAuraPlayerController::AAuraPlayerController()
 {
@@ -55,6 +57,8 @@ void AAuraPlayerController::SetupInputComponent()
 	if (UAuraInputComponent* AuraInputComponent = Cast<UAuraInputComponent>(InputComponent))
 	{
 		AuraInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
+		AuraInputComponent->BindAction(IA_Shift, ETriggerEvent::Started, this, &AAuraPlayerController::ShiftPressed);
+		AuraInputComponent->BindAction(IA_Shift, ETriggerEvent::Completed, this, &AAuraPlayerController::ShiftReleased);
 		AuraInputComponent->BindAbilityActions(AuraInputConfig, this, &AAuraPlayerController::AbilityInputTagPressed, &AAuraPlayerController::AbilityInputTagReleased, &AAuraPlayerController::AbilityInputTagHeld);
 	}
 }
@@ -74,33 +78,28 @@ void AAuraPlayerController::Move(const FInputActionValue& InInputActionValue)
 	}
 }
 
+void AAuraPlayerController::ShiftPressed()
+{
+	bShiftKeyDown = true;
+}
+
+void AAuraPlayerController::ShiftReleased()
+{
+	bShiftKeyDown = false;
+}
+
 void AAuraPlayerController::CursorTrace()
 {
-	FHitResult HitResult;
 	GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
 	if (!HitResult.bBlockingHit) return;
 
 	LastActor = ThisActor;
 	ThisActor = Cast<IEnemyInterface>(HitResult.GetActor());
 
-	if (LastActor != nullptr)
+	if (ThisActor != LastActor)
 	{
-		if (ThisActor == nullptr)
-		{
-			LastActor->UnHighlightActor();
-		}
-		else if (LastActor != ThisActor)
-		{
-			LastActor->UnHighlightActor();
-			ThisActor->HighlightActor();
-		}
-	}
-	else
-	{
-		if (ThisActor != nullptr)
-		{
-			ThisActor->HighlightActor();
-		}
+		if (LastActor) LastActor->UnHighlightActor();
+		if (ThisActor) ThisActor->HighlightActor();
 	}
 }
 
@@ -123,34 +122,33 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InGameplayTag)
 		}
 		return;
 	}
-	if (bTargeting)
+	if (GetAuraAbilitySystemComponent())
 	{
-		if (GetAuraAbilitySystemComponent())
-		{
-			GetAuraAbilitySystemComponent()->AbilityInputTagReleased(InGameplayTag);
-		}
+		GetAuraAbilitySystemComponent()->AbilityInputTagReleased(InGameplayTag);
 	}
-	else
-	{
-		APawn* ControllerPawn = GetPawn<APawn>();
-		if (ControllerPawn && FollowTime <= ShortPressThreshold)
-		{
-			//查找路径
-			if (UNavigationPath* NavigationPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControllerPawn->GetActorLocation(), CachedDestination))
-			{
-				for (const FVector& PathLocation : NavigationPath->PathPoints)
-				{
-					Spline->AddSplinePoint(PathLocation, ESplineCoordinateSpace::World);
-					DrawDebugSphere(GetWorld(), PathLocation, 10.f, 10, FColor::Green, false, 10.f);
-				}
-				//将查找到的最后一个路径点设置为目标位置
-				CachedDestination = NavigationPath->PathPoints[NavigationPath->PathPoints.Num() - 1];
-				bAutoRunning = true;
-			}
-		}
-		FollowTime = 0.f;
-		bTargeting = false;
-	}
+// 	if (!bTargeting && !bShiftKeyDown)
+// 	{
+// 		APawn* ControllerPawn = GetPawn<APawn>();
+// 		if (ControllerPawn && FollowTime <= ShortPressThreshold)
+// 		{
+// 			//查找路径
+// 			if (UNavigationPath* NavigationPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControllerPawn->GetActorLocation(), CachedDestination))
+// 			{
+// 				for (const FVector& PathLocation : NavigationPath->PathPoints)
+// 				{
+// 					Spline->AddSplinePoint(PathLocation, ESplineCoordinateSpace::World);
+// 				}
+// 				//将查找到的最后一个路径点设置为目标位置
+// 				if (NavigationPath->PathPoints.Num() > 0)
+// 				{
+// 					CachedDestination = NavigationPath->PathPoints[NavigationPath->PathPoints.Num() - 1];
+// 					bAutoRunning = true;
+// 				}
+// 			}
+// 		}
+// 		FollowTime = 0.f;
+// 		bTargeting = false;
+// 	}
 }
 
 void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InGameplayTag)
@@ -163,7 +161,7 @@ void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InGameplayTag)
 		}
 		return;
 	}
-	if (bTargeting)
+	if (bTargeting || bShiftKeyDown)
 	{
 		if (GetAuraAbilitySystemComponent())
 		{
@@ -176,10 +174,9 @@ void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InGameplayTag)
 		/**
 		 * 获取鼠标点击的位置
 		 */
-		FHitResult Hit;
-		if (GetHitResultUnderCursor(ECC_Visibility, false, Hit))
+		if (HitResult.bBlockingHit)
 		{
-			CachedDestination = Hit.ImpactPoint;
+			CachedDestination = HitResult.ImpactPoint;
 		}
 		//移动Pawn
 		if (APawn* ControllerPawn = GetPawn<APawn>())
@@ -217,3 +214,16 @@ void AAuraPlayerController::AutoRun()
 		}
 	}
 }
+
+void AAuraPlayerController::Client_ShowDamageNumber_Implementation(float Damage, ACharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit)
+{
+	if (IsValid(TargetCharacter) && DamageTextComponentClass)
+	{
+		UDamageTextComponent* DamageTextComponent = NewObject<UDamageTextComponent>(TargetCharacter, DamageTextComponentClass);
+		DamageTextComponent->RegisterComponent();
+		DamageTextComponent->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		DamageTextComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		DamageTextComponent->SetDamageText(Damage, bCriticalHit, bBlockedHit);
+	}
+}
+ 

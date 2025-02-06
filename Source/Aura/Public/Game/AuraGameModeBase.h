@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "AuraGameModeBase.generated.h"
 
+class UCharacterClassInfo;
+
 /**
  * 
  */
@@ -14,4 +16,10 @@ class AURA_API AAuraGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+public:
+	/**
+	 * @brief 角色类别信息数据资产
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Character Class Default")
+	TObjectPtr<UCharacterClassInfo> CharacterClassInfo;
 };

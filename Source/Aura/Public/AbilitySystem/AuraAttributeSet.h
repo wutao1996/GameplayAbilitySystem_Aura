@@ -16,11 +16,11 @@ GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
 
 USTRUCT()
-struct FEffectProperties
+struct FProperties
 {
 	GENERATED_BODY()
 
-	FEffectProperties(){};
+	FProperties(){};
 
 	FGameplayEffectContextHandle EffectContextHandle;
 
@@ -169,6 +169,27 @@ public:
 	FGameplayAttributeData MaxMana;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, MaxMana);
 
+
+	/*
+	* Resistance Attribute
+	*/
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_FireResistance)
+	FGameplayAttributeData FireResistance;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, FireResistance);
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_LightningResistance)
+	FGameplayAttributeData LightningResistance;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, LightningResistance);
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_ArcaneResistance)
+	FGameplayAttributeData ArcaneResistance;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, ArcaneResistance);
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_PhysicalResistance)
+	FGameplayAttributeData PhysicalResistance;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, PhysicalResistance);
+
 	/*
 	* Vital Attribute
 	*/
@@ -186,6 +207,18 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Mana)
 	FGameplayAttributeData Mana;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Mana);
+
+
+	/*
+	 * Meta Attributes
+	 */
+
+	/**
+	 * @brief …À∫¶
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "Meta Attributes")
+	FGameplayAttributeData IncomingDamage;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, IncomingDamage);
 
 public:
 	UAuraAttributeSet();
@@ -250,6 +283,20 @@ public:
 	UFUNCTION()
 	void OnRep_MaxMana(const FGameplayAttributeData& InOldMaxMana);
 
+	//Resistance
+
+	UFUNCTION()
+	void OnRep_FireResistance(const FGameplayAttributeData& InOldFireResistance);
+
+	UFUNCTION()
+	void OnRep_LightningResistance(const FGameplayAttributeData& InOldLightningResistance);
+
+	UFUNCTION()
+	void OnRep_ArcaneResistance(const FGameplayAttributeData& InOldArcaneResistance);
+
+	UFUNCTION()
+	void OnRep_PhysicalResistance(const FGameplayAttributeData& InOldPhysicalResistance);
+
 private:
-	void SetEffectProperties(const struct FGameplayEffectModCallbackData& Data, FEffectProperties& Props);
+	void SetProperties(const struct FGameplayEffectModCallbackData& Data, FProperties& Props);
 };

@@ -8,19 +8,17 @@
 #include "Player/AuraPlayerController.h"
 #include "UI/HUD/AuraHUD.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "../Aura.h"
 
 AAuraCharacter::AAuraCharacter()
 {
-	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 400.f, 0.f);
 
 	//限制在平面上
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;	
 
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationRoll = false;
-	bUseControllerRotationYaw = false;
+	GetMesh()->SetCollisionResponseToChannel(ECC_Projectile, ECR_Ignore);
 }
 
 void AAuraCharacter::PossessedBy(AController* NewController)

@@ -2,12 +2,12 @@
 
 
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
-#include "UI/AuraGameplayTags.h"
-#include "AbilitySystem/GameplayAbility/AuraGameplayAbility.h"
+#include "AuraGameplayTags.h"
+#include "AbilitySystem/Ability/AuraGameplayAbility.h"
 
 void UAuraAbilitySystemComponent::AbilityActorInfoSet()
 {
-	OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &UAuraAbilitySystemComponent::EffectApplied);
+	OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &UAuraAbilitySystemComponent::Client_EffectApplied);
 }
 
 void UAuraAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& InGameplayAbilities)
@@ -38,12 +38,6 @@ void UAuraAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& In
 		{	
 			//通知GameplayAbility按键被释放
 			AbilitySpecInputReleased(GameplayTag);
-			//判断能力是否激活
-			if (!GameplayTag.IsActive())
-			{
-				//激活能力
-				TryActivateAbility(GameplayTag.Handle);
-			}
 		}
 	}
 }
@@ -69,7 +63,7 @@ void UAuraAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InGame
 	}
 }
 
-void UAuraAbilitySystemComponent::EffectApplied(UAbilitySystemComponent* InAbilitySystemComponent, const FGameplayEffectSpec& InEffectSpec, FActiveGameplayEffectHandle InActiveEffectHandle)
+void UAuraAbilitySystemComponent::Client_EffectApplied_Implementation(UAbilitySystemComponent* InAbilitySystemComponent, const FGameplayEffectSpec& InEffectSpec, FActiveGameplayEffectHandle InActiveEffectHandle)
 {
 	FGameplayTagContainer GameplayTagContainer;
 	InEffectSpec.GetAllAssetTags(GameplayTagContainer);

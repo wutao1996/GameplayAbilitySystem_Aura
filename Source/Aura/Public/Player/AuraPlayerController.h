@@ -13,6 +13,7 @@ class UInputMappingContext;
 class IEnemyInterface;
 class UAuraInputConfig;
 class USplineComponent;
+class UDamageTextComponent;
 class UAuraAbilitySystemComponent;
 
 /**
@@ -31,9 +32,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> IA_Move;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> IA_Shift;
+
 private:
+	bool bShiftKeyDown = false;
+
 	IEnemyInterface* LastActor;
 	IEnemyInterface* ThisActor;
+	FHitResult HitResult;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UAuraInputConfig> AuraInputConfig;
@@ -71,6 +78,11 @@ private:
 	 */
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent> Spline;
+	/**
+	 * @brief 伤害文本组件类（用于显示收到的伤害）
+	 */
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
 public:
 	AAuraPlayerController();
 
@@ -84,6 +96,10 @@ protected:
 private:
 	void Move(const FInputActionValue& InInputActionValue);
 
+	void ShiftPressed();
+
+	void ShiftReleased();
+
 	void CursorTrace();
 
 	void AbilityInputTagPressed(FGameplayTag InGameplayTag);
@@ -95,4 +111,8 @@ private:
 	UAuraAbilitySystemComponent* GetAuraAbilitySystemComponent();
 
 	void AutoRun();
+
+public:
+	UFUNCTION(Client, Reliable)
+	void Client_ShowDamageNumber(float Damage, ACharacter* TargetCharacter, bool bCriticalHit, bool bBlockedHit);
 };
